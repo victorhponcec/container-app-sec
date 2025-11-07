@@ -3,35 +3,20 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: "us-east-1"
-    ECR_REPO: "" # Terraform will inject the value
+    ECR_REPO: ""
 
 phases:
   pre_build:
     commands:
-      - echo "=== Pre-build phase ==="
-      - echo "AWS CLI version: $(aws --version)"
       - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO
-      - echo "Logged in to $ECR_REPO"
 
   build:
     commands:
-      - echo "=== Build phase ==="
-      - echo "Current directory: $(pwd)"
-      - echo "Listing files:"
-      - ls -la
       - echo "Building Docker image..."
       - docker build -t $ECR_REPO .
-      - docker tag $ECR_REPO:latest $ECR_REPO:latest
-      - echo "Docker image built and tagged"
 
   post_build:
     commands:
-      - echo "=== Post-build phase ==="
       - echo "Pushing Docker image to ECR..."
       - docker push $ECR_REPO:latest
-      - echo "Docker image pushed: $ECR_REPO:latest"
-
-artifacts:
-  files:
-    - '**/*'
